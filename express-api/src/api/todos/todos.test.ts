@@ -2,6 +2,14 @@ import { response } from 'express';
 import request from 'supertest';
 
 import app from '../../app';
+import { Todos } from './todos.model';
+
+beforeAll(async () => {
+    try {
+        await Todos.drop();
+    } catch (error) {
+    }
+})
 
 //schema for some basic test with 'jest'
 describe('GET /api/v1', () => {
@@ -13,7 +21,7 @@ describe('GET /api/v1', () => {
             .expect(200)
             .then((response) => {
                 expect(response.body).toHaveProperty('length');
-                expect(response.body.length).toBe(1);
+                expect(response.body.length).toBe(0);
                 expect(response.body[0]).toHaveProperty('content');
                 expect(response.body[0]).toHaveProperty('done');
             })
