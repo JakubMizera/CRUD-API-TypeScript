@@ -1,4 +1,7 @@
 import * as z from 'zod';
+import { WithId } from 'mongodb';
+
+import { db } from '../../db'
 
 //validation schema
 const Todo = z.object({
@@ -6,6 +9,6 @@ const Todo = z.object({
     done: z.boolean().default(false),
 });
 
-type Todo = z.infer<typeof Todo>;
-
-export default Todo;
+export type Todo = z.infer<typeof Todo>;
+export type TodoWithId = WithId<Todo>;
+export const Todos = db.collection<Todo>('todos');
