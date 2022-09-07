@@ -1,3 +1,4 @@
+import { response } from 'express';
 import request from 'supertest';
 import app from '../../app';
 import { Todos } from './todos.model';
@@ -11,8 +12,8 @@ beforeAll(async () => {
 
 
 //schema for some basic test with 'jest'
-describe('GET /api/v1', () => {
-    it('responds with an array of todos', (done) => {
+describe('GET /api/v1/todos', () => {
+    it('responds with an array of todos', async () =>
         request(app)
             .get('/api/v1/todos')
             .set('Accept', 'application/json')
@@ -21,15 +22,13 @@ describe('GET /api/v1', () => {
             .then((response) => {
                 expect(response.body).toHaveProperty('length');
                 expect(response.body.length).toBe(0);
-                done();
-            })
-    });
+            }),
+    );
 });
 
-
-//test for createOne post method
-describe('POST /api/v1', () => {
-    it('responds with an error if the todo is invalid', (done) => {
+let id = '';
+describe('POST /api/v1/todos', () => {
+    it('responds with an error if the todo is invalid', async () =>
         request(app)
             .post('/api/v1/todos')
             .set('Accept', 'application/json')
@@ -40,10 +39,9 @@ describe('POST /api/v1', () => {
             .expect(422)
             .then((response) => {
                 expect(response.body).toHaveProperty('message');
-                done();
-            })
-    });
-    it('responds with an inserted object', (done) => {
+            }),
+    );
+    it('responds with an inserted object', async () =>
         request(app)
             .post('/api/v1/todos')
             .set('Accept', 'application/json')
@@ -54,12 +52,47 @@ describe('POST /api/v1', () => {
             .expect('Content-Type', /json/)
             .expect(201)
             .then((response) => {
-                console.log(response.body)
                 expect(response.body).toHaveProperty('_id');
+                id = response.body._id;
+                //console.log(id)
                 expect(response.body).toHaveProperty('content');
                 expect(response.body.content).toBe('Learn TypeScript');
                 expect(response.body).toHaveProperty('done');
-                done();
-            })
-    });
+            }),
+    );
 });
+
+describe('GET /api/v1/todos/:id', () => {
+    it('responds with a single todo', async () =>
+      request(app)
+        .get(`/api/v1/todos/${id}`)
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then((response) => {
+          expect(response.body).toHaveProperty('_id');
+          expect(response.body._id).toBe(id);
+          expect(response.body).toHaveProperty('content');
+          expect(response.body.content).toBe('Learn TypeScript');
+          expect(response.body).toHaveProperty('done');
+        }),
+    );
+    it('responds with an invalid ObjectId error', (done) => {
+      request(app)
+        .get('/api/v1/todos/adsfadsfasdfasdf')
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(422)
+        .then((response) => {
+            //console.log(response.body.message)
+            done();
+        });
+    });
+    it('responds with a not found error', (done) => {
+      request(app)
+        .get('/api/v1/todos/6306d061477bdb46f9c57fa4')
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(404, done);
+    });
+  });
