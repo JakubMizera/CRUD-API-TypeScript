@@ -1,6 +1,32 @@
 import { NextFunction, Request, Response } from 'express';
+import { ZodError } from 'zod';
+import RequestValidators from './interfaces/RequestValidators'
 
 import ErrorResponse from './interfaces/ErrorResponse';
+
+//every middleware fun require req, res, next function, so we will return this function
+export function validateRequest(validators: RequestValidators) {
+  return async (req: Request, res: Response, next: NextFunction) => {
+      try {
+          if (validators.params) {
+              req.params = await validators.params.parseAsync(req.params);
+          }
+          if (validators.body) {
+              req.body = await validators.body.parseAsync(req.body);
+          }
+          if (validators.query) {
+              req.query = await validators.query.parseAsync(req.query);
+          }
+          next();
+      } catch (error) {
+          //if there is validation error => send 422 status
+          if (error instanceof ZodError) {
+              res.status(422);
+          }
+          next(error);
+      }
+  }
+}
 
 export function notFound(req: Request, res: Response, next: NextFunction) {
   res.status(404);

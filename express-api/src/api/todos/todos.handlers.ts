@@ -15,13 +15,12 @@ export async function findAll(req: Request, res: Response<TodoWithId[]>, next: N
 // Request <> 1st = e.g url with id, 2nd = Res body = TodoWithId, Reqbody = Todo
 export async function createOne(req: Request<{}, TodoWithId, Todo>, res: Response<TodoWithId>, next: NextFunction) {
     try {
-        const validateResult = await Todo.parseAsync(req.body);
-        const insertResult = await Todos.insertOne(validateResult);
+        const insertResult = await Todos.insertOne(req.body);
         if (!insertResult.acknowledged) throw new Error('Error inserting todo');
         res.status(201);
         res.json({
             _id: insertResult.insertedId,
-            ...validateResult,
+            ...req.body,
         });
     } catch (error) {
         next(error);
