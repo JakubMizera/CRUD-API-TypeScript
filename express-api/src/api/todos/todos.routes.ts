@@ -13,5 +13,6 @@ router.get('/:id', validateRequest({ params: ParamsWithId, }), TodoHandlers.find
 //code will look at incoming request body, if it's good it will call next function, if not it will throw error
 router.post('/', validateRequest({ body: Todo, }), TodoHandlers.createOne);
 router.put('/:id', validateRequest({params: ParamsWithId, body: Todo}), TodoHandlers.updateOne);
+router.delete('/:id', validateRequest({params: ParamsWithId}), TodoHandlers.deleteOne);
 
 export default router;
